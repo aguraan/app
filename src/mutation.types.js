@@ -1,0 +1,2 @@
+export const START_OPERATION = 'START_OPERATION'
+export const END_OPERATION = 'END_OPERATION'
