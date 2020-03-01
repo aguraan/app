@@ -13,5 +13,8 @@ export default {
     },
     updateGoogleAccountById(id, googleUpdate) {
         return API.patch(`/api/accounts/google/${ id }`, { googleUpdate })
-    }
+    },
+    getUserSessionsById(id) {
+        return API.get(`/api/sessions/${ id }`)
+    },
 }

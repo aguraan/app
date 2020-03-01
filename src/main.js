@@ -4,6 +4,7 @@ import vuetify from '@/plugins/vuetify'
 import storage from '@/plugins/storage'
 import router from '@/router'
 import store from '@/store'
+import './registerServiceWorker'
 
 // Vue.use(storage)
 

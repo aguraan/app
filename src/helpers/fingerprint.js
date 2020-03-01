@@ -4,8 +4,6 @@ const fingerprint = (resolve, reject) => {
     const options = {}
     Fingerprint2.getPromise(options)
         .then(components => {
-            /* eslint-disable */
-            // console.log({ components })
             const values = components.map(component => component.value )
             const murmur = Fingerprint2.x64hash128(values.join(''), 31)
             resolve(murmur)

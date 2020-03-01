@@ -67,11 +67,8 @@ const router = new Router({
 
 router.beforeEach( async (to, from, next) => {
     const { getters, dispatch } = store
-    /* eslint-disable */
 
-    // console.log('getters.refreshToken() && getters.isAccessTokenExpired()', getters.refreshToken() && getters.isAccessTokenExpired())
-    // if (getters.refreshToken() && getters.isAccessTokenExpired()) {
-    if (!getters.isAuthenticated() && getters.refreshToken()) {
+    if (getters.isAccessTokenExpired() && getters.refreshToken()) {
 
         try {
             await dispatch(REFRESH_TOKEN_REQUEST)
@@ -81,44 +78,15 @@ router.beforeEach( async (to, from, next) => {
     }
 
     if (to.matched[0].meta.requiresAuth) {
+
         if (getters.isAuthorized(to)) next()
-        else if (from.name) next(false)
-        else window.history.back()
+        else if (getters.isAuthenticated()) next({ name: getters.user.role.toLowerCase() })
+        else next('/login')
+
     } else {
-        next()
+        if (getters.isAuthenticated() && to.matched[0].meta.blocked) next(false)
+        else next()
     }
-
-    // if (getters.isAuthorized(to)) {
-    //     next()
-    // } else {
-    //     if (to.matched[0].meta.blocked) next()
-    //     else if (from.name) next(false)
-    //     else if (window.history.length) window.history.back()
-    //     else next({ name: getters.user.role.toLowerCase() })
-    // }
-
-    // if (!getters.isAuthorized(to)) {
-
-    //     if (getters.refreshToken()) {
-
-    //         try {
-    //             await dispatch(REFRESH_TOKEN_REQUEST)
-    //         } catch (error) {
-    //             next(error)
-    //         }
-    //     }
-    // }
-
-    // if (!getters.isAuthorized(to)) {
-
-    //     if (to.matched[0].meta.blocked) next()
-    //     else if (from.name) next(false)
-    //     else if (window.history.length) window.history.back()
-    //     else next({ name: getters.user.role.toLowerCase() })
-
-    // } else {
-    //     next()
-    // }
     
 })
 

@@ -6,10 +6,14 @@ import {
     UPDATE_GOOGLE_DATA,
     SELECT_THEME,
     SET_DARK_MODE,
+    SET_SESSIONS,
+    GET_SESSIONS_BY_ID,
 } from '@/mutation.types'
 import apiService from '@/API/api.service'
 import vuetify from '@/plugins/vuetify'
 import storage from '@/plugins/storage'
+
+import DeviceDetector from 'device-detector-js'
 
 export default {
     state: {
@@ -17,12 +21,14 @@ export default {
         googleData: null,
         selectedTheme: storage.get('theme') || 0,
         darkMode: storage.get('dark') || false,
+        sessions: {}
     },
     getters: {
         user: ({ user }) => user,
         googleData: ({ googleData }) => googleData,
         selectedTheme: ({ selectedTheme }) => selectedTheme,
         darkMode: ({ darkMode }) => darkMode,
+        sessions: ({ sessions }) => sessions,
     },
     mutations: {
         [SET_USER]: (state, user) => {
@@ -63,6 +69,7 @@ export default {
             vuetify.framework.theme.dark = val
             state.darkMode = val
         },
+        [SET_SESSIONS]: (state, payload) => state.sessions = { ...state.sessions, ...payload },
     },
     actions: {
         [UPDATE_USER]: ({ commit }, payload) => {
@@ -98,6 +105,42 @@ export default {
                 }
             })
         },
+        [GET_SESSIONS_BY_ID]: ({ commit }, id) => {
+            return new Promise( async (resolve, reject) => {
+                try {
+                    const response = await apiService.getUserSessionsById(id)
+
+                    const deviceDetector = new DeviceDetector()
+                    const clientIcons = device => {
+                        device;
+                        // if (device.client) {
+                        //     const { name } = device.client
+                        //     if (/chrome/i.test(name)) return 'mdi-google-chrome'
+                        //     if (/opera/i.test(name)) return 'mdi-opera'
+                        //     if (/firefox/i.test(name)) return 'mdi-firefox'
+                        // }
+                        return 'mdi-help'
+                    }
+                    const sessions = response.data.sessions.map(session => {
+                        const device = deviceDetector.parse(session.ua)
+                        const meta = {
+                            client: { 
+                                ...device.client,
+                                icon: clientIcons(device)
+                            },
+                            os: { ...device.os },
+                            device: { ...device.device }
+                        }
+                        return { ...session, ...meta }
+                    })
+
+                    commit(SET_SESSIONS, { [id]: sessions })
+                    resolve(response)
+                } catch (error) {
+                    reject(error)
+                }
+            })
+        }
         // [PRELOAD_ADMIN_DATA]: ({ dispatch, getters }) => {
         //     return new Promise( async (resolve, reject) => {
         //         if (getters.user.id) {

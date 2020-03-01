@@ -27,7 +27,7 @@ import storage from '@/plugins/storage'
 import fingerprint from '@/helpers/fingerprint'
 import popup from '@/popup'
 
-popup.defaults.baseUrl = process.env.NODE_ENV !== 'development' ? 'http://localhost:3000' : 'https://app.scheme.com.ua'
+popup.defaults.baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://app.scheme.com.ua'
 
 export default {
     state: {
@@ -46,33 +46,21 @@ export default {
         accessToken: ({ accessToken }) => accessToken,
         accessTokenPayload: ({ accessTokenPayload }) => accessTokenPayload,
         isAccessTokenExpired: ({ accessTokenPayload }) => () => {
-            /* eslint-disable */
             if (accessTokenPayload) {
                 const { exp } = accessTokenPayload
-                const now = Date.now() / 1000
-                // const date = new Date()
-                // const diff = date.getTimezoneOffset() * 60
-                // console.log({ diff })
-                // const now = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds()) / 1000
-                // const now = Math.floor(Date.now() / 1000) + diff
-                // if (exp > now) return false
-                console.log({ exp, now })
+                const now = Date.parse(new Date().toUTCString()) / 1000
                 return exp < now
             }
             return true
         },
         isAuthenticated: ({ accessToken }) => () => !!accessToken,
-        // isAuthenticated: ({ accessTokenPayload, user }, getters) => {
-        //     if (accessTokenPayload && user && getters.refreshToken()) {
-        //         const { userId } = accessTokenPayload
-        //         if (userId === user.id) return true
-        //     }
-        //     return false
-        // },
         isAuthorized: ({ accessTokenPayload }, getters) => route => {
-            if (accessTokenPayload && !route.matched[0].meta.blocked && route.matched[0].meta.requiresAuth /** !getters.isAccessTokenExpired() */) {
+            if (accessTokenPayload && 
+                    !route.matched[0].meta.blocked && 
+                    route.matched[0].meta.requiresAuth && 
+                    !getters.isAccessTokenExpired()
+                ) {
                 const { role } = accessTokenPayload
-                // if (role.toLowerCase() !== route.matched[0].name) return false
                 return role.toLowerCase() === route.matched[0].name
             }
             return false
@@ -224,7 +212,7 @@ export default {
                     reject(error)
                 } finally {
                     commit(END_OPERATION, operation)
-                    popup.window.close()
+                    popup.close()
                 }
             })
         },

@@ -208,6 +208,7 @@ import { mapGetters } from 'vuex'
 import { 
 	LOGOUT,
 	GET_GOOGLE_DATA,
+	GET_SESSIONS_BY_ID,
 	EXCHANGE_RATES_REQUEST,
 	SELECT_THEME,
 	SET_DARK_MODE,
@@ -314,14 +315,13 @@ export default {
 		},
 		async preloadData() {
 			try {
-				let googelData
-				if (this.user.google_id) {
-					googelData = this.$store.dispatch(GET_GOOGLE_DATA, this.user.google_id)
-				}
+				const googleData = this.user.google_id && this.$store.dispatch(GET_GOOGLE_DATA, this.user.google_id)
 				const exchangeRates = this.$store.dispatch(EXCHANGE_RATES_REQUEST)
+				const sessions = this.$store.dispatch(GET_SESSIONS_BY_ID, this.user.id)
 
-				await googelData
+				await googleData
 				await exchangeRates
+				await sessions
 			} catch (error) {
 				//
 			}

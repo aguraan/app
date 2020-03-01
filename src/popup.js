@@ -2,11 +2,12 @@ import { isJSON } from '@/helpers'
 import { NativeEventSource, EventSourcePolyfill } from 'event-source-polyfill'
 
 const serializeProps = props => Object.entries(props).map( prop => `${ prop[0] }=${ prop[1]}`).join(',')
-
+/* eslint-disable */
 const popup = {
 	window: null,
 	previousUrl: null,
 	es: null,
+	timer: null,
 
 	_windowProps: {
 		resizable: 'no',
@@ -73,12 +74,18 @@ const popup = {
 					this.window.focus()
 				}
 				this.previousUrl = url
-				const timer = setInterval(() => {
-					if (this.window.closed) {
-						clearInterval(timer)
+
+				this.timer = window.setInterval(() => {
+					if (this.window && this.window.closed) {
+						window.clearInterval(this.timer)
+						this.window = null
+						this.es = null
+						this.timer = null
 						reject({ message: 'Popup Closed'})
+					} else {
+
 					}
-				}, 1000)
+				}, 500)
 			})
 
 
@@ -106,4 +113,5 @@ const popup = {
 		}
 	}
 }
+
 export default popup
